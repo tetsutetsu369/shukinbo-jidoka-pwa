@@ -203,10 +203,24 @@ function handleCommit() {
     alert('抽出結果がありません。');
     return;
   }
-  if (!confirm('出勤簿シートに書き込みます。よろしいですか？')) {
-    return;
-  }
 
+  callApi('checkSheetExists', { targetMonth: currentTargetMonth })
+    .then(function (result) {
+      var message = result.exists
+        ? currentTargetMonth + ' のシートは既に存在します。上書きされます。よろしいですか？'
+        : '出勤簿シートに書き込みます。よろしいですか？';
+      return showConfirmModal(message, result.exists);
+    })
+    .then(function (confirmed) {
+      if (!confirmed) return;
+      doCommit();
+    })
+    .catch(function (error) {
+      setStatus('エラー: ' + error.message, 'error');
+    });
+}
+
+function doCommit() {
   document.getElementById('commit-button').disabled = true;
   showLoadingOverlay('出勤簿に書き込んでいます...');
 
@@ -221,6 +235,32 @@ function handleCommit() {
       hideLoadingOverlay();
       setStatus('エラー: ' + error.message, 'error');
     });
+}
+
+// ===== 確認モーダル（confirm()の代わり） =====
+function showConfirmModal(message, isWarning) {
+  return new Promise(function (resolve) {
+    var modal = document.getElementById('confirm-modal');
+    var box = modal.querySelector('.modal-box');
+    box.classList.toggle('warning', !!isWarning);
+    document.getElementById('confirm-modal-message').textContent = message;
+    modal.classList.add('visible');
+
+    var okBtn = document.getElementById('confirm-modal-ok');
+    var cancelBtn = document.getElementById('confirm-modal-cancel');
+
+    function cleanup(value) {
+      modal.classList.remove('visible');
+      okBtn.removeEventListener('click', onOk);
+      cancelBtn.removeEventListener('click', onCancel);
+      resolve(value);
+    }
+    function onOk() { cleanup(true); }
+    function onCancel() { cleanup(false); }
+
+    okBtn.addEventListener('click', onOk);
+    cancelBtn.addEventListener('click', onCancel);
+  });
 }
 
 function showLoadingOverlay(message) {

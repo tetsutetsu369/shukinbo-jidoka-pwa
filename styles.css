@@ -293,6 +293,9 @@ button.secondary:hover:not(:disabled) { background: #eef1ff; }
   #install-banner { flex-direction: column; align-items: stretch; text-align: center; }
   #install-banner button { width: 100%; }
 
+  .modal-actions { flex-direction: column-reverse; }
+  .modal-actions button { width: 100%; }
+
   .legend { font-size: 0.85em; }
 }
 
@@ -339,3 +342,38 @@ button.secondary:hover:not(:disabled) { background: #eef1ff; }
   to { transform: scale(1); opacity: 1; }
 }
 #loading-overlay.success #loading-overlay-text { color: var(--high-text); }
+
+/* ===== 確認モーダル ===== */
+#confirm-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 24, 40, 0.45);
+  z-index: 1100;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5em;
+}
+#confirm-modal.visible { display: flex; }
+.modal-box {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 1.6em;
+  max-width: 380px;
+  width: 100%;
+  box-shadow: 0 12px 40px rgba(20, 24, 40, 0.25);
+  animation: pop-in 0.15s ease-out;
+}
+.modal-box.warning { border: 2px solid var(--medium-text); }
+#confirm-modal-message {
+  font-size: 0.98em;
+  color: var(--text);
+  line-height: 1.6;
+  margin-bottom: 1.4em;
+  white-space: pre-wrap;
+}
+.modal-box.warning #confirm-modal-message::before {
+  content: "⚠️ ";
+}
+.modal-actions { display: flex; gap: 0.7em; justify-content: flex-end; }
+.modal-actions button { width: auto; }
