@@ -104,82 +104,94 @@ function handleUpload() {
   reader.readAsText(fileInput.files[0], 'utf-8');
 }
 
-var FIELD_LABELS = { date: '日付', site: '現場', start: '始業', end: '終業' };
-
-function makeCell(value, editable, rowIndex, field) {
-  var td = document.createElement('td');
-  td.setAttribute('data-label', FIELD_LABELS[field] || field);
-  td.textContent = value || '';
-  if (editable) {
-    td.contentEditable = 'true';
-    td.addEventListener('blur', function () {
-      extractedRows[rowIndex][field] = td.textContent.trim();
-    });
-  }
-  return td;
+function makeEditableSpan(value, rowIndex, field, className) {
+  var span = document.createElement('span');
+  span.className = className;
+  span.contentEditable = 'true';
+  span.textContent = value || '';
+  span.addEventListener('blur', function () {
+    extractedRows[rowIndex][field] = span.textContent.trim();
+  });
+  return span;
 }
 
 function renderPreview(rows) {
-  var tbody = document.querySelector('#preview-table tbody');
-  tbody.innerHTML = '';
+  var list = document.getElementById('preview-list');
+  list.innerHTML = '';
 
   rows.forEach(function (row, index) {
-    var tr = document.createElement('tr');
+    var card = document.createElement('div');
+    card.className = 'entry-card';
 
-    tr.appendChild(makeCell(row.date, false, index, 'date'));
-    tr.appendChild(makeCell(row.site, true, index, 'site'));
-    tr.appendChild(makeCell(row.start, true, index, 'start'));
-    tr.appendChild(makeCell(row.end, true, index, 'end'));
+    // 1行目: 日付 + 現場（編集可） + confidenceバッジ
+    var row1 = document.createElement('div');
+    row1.className = 'entry-row1';
 
-    var confTd = document.createElement('td');
-    confTd.setAttribute('data-label', 'confidence');
+    var dateSpan = document.createElement('span');
+    dateSpan.className = 'entry-date';
+    dateSpan.textContent = row.date || '';
+    row1.appendChild(dateSpan);
+
+    row1.appendChild(makeEditableSpan(row.site, index, 'site', 'entry-site'));
+
     var badge = document.createElement('span');
     badge.className = 'badge ' + (row.confidence || 'high');
     badge.textContent = row.confidence || '';
-    confTd.appendChild(badge);
-    tr.appendChild(confTd);
+    row1.appendChild(badge);
 
-    var notesTd = document.createElement('td');
-    notesTd.className = 'notes-cell';
-    notesTd.setAttribute('data-label', 'notes');
-    notesTd.textContent = row.notes || '';
-    tr.appendChild(notesTd);
+    card.appendChild(row1);
 
-    var sourceTd = document.createElement('td');
-    var sourceRowId = 'source-row-' + index;
+    // 2行目: 始業〜終業（編集可） + notes/元のアイコンボタン
+    var row2 = document.createElement('div');
+    row2.className = 'entry-row2';
+
+    var timeSpan = document.createElement('span');
+    timeSpan.className = 'entry-time';
+    timeSpan.appendChild(makeEditableSpan(row.start, index, 'start', 'entry-start'));
+    timeSpan.appendChild(document.createTextNode(' 〜 '));
+    timeSpan.appendChild(makeEditableSpan(row.end, index, 'end', 'entry-end'));
+    row2.appendChild(timeSpan);
+
+    var iconGroup = document.createElement('span');
+    iconGroup.className = 'entry-icons';
+
+    var detailBox = null;
     if (row.source) {
-      var toggleBtn = document.createElement('button');
-      toggleBtn.className = 'source-toggle';
-      toggleBtn.textContent = '元を見る';
-      toggleBtn.addEventListener('click', function () {
-        var el = document.getElementById(sourceRowId);
-        var isHidden = el.style.display === 'none' || !el.style.display;
-        el.style.display = isHidden ? 'table-row' : 'none';
-        toggleBtn.textContent = isHidden ? '閉じる' : '元を見る';
+      var sourceBtn = document.createElement('button');
+      sourceBtn.className = 'icon-btn';
+      sourceBtn.title = '判断根拠の元メッセージを見る';
+      sourceBtn.textContent = '🔍';
+      sourceBtn.addEventListener('click', function () {
+        detailBox.classList.toggle('visible');
       });
-      sourceTd.appendChild(toggleBtn);
+      iconGroup.appendChild(sourceBtn);
     }
-    tr.appendChild(sourceTd);
+    row2.appendChild(iconGroup);
+    card.appendChild(row2);
 
-    tbody.appendChild(tr);
+    // notesは短い文言なので常時表示（あれば）
+    if (row.notes) {
+      var notesEl = document.createElement('div');
+      notesEl.className = 'entry-notes';
+      notesEl.textContent = row.notes;
+      card.appendChild(notesEl);
+    }
 
+    // 元メッセージは長くなりうるので折りたたみ表示
     if (row.source) {
-      var sourceRow = document.createElement('tr');
-      sourceRow.className = 'source-row';
-      sourceRow.id = sourceRowId;
-      sourceRow.style.display = 'none';
-      var sourceCell = document.createElement('td');
-      sourceCell.colSpan = 7;
+      detailBox = document.createElement('div');
+      detailBox.className = 'entry-source';
       var label = document.createElement('span');
       label.className = 'source-label';
       label.textContent = '判断根拠となった元のLINE本文';
       var pre = document.createElement('pre');
       pre.textContent = row.source;
-      sourceCell.appendChild(label);
-      sourceCell.appendChild(pre);
-      sourceRow.appendChild(sourceCell);
-      tbody.appendChild(sourceRow);
+      detailBox.appendChild(label);
+      detailBox.appendChild(pre);
+      card.appendChild(detailBox);
     }
+
+    list.appendChild(card);
   });
 
   document.getElementById('preview-section').style.display = 'block';
