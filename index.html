@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>出勤簿自動化</title>
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#4f6ef7">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="出勤簿">
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1><img src="icons/icon-192.png" alt=""> 出勤簿自動化</h1>
+    <div class="subtitle">LINEのトーク履歴から勤務時間を自動抽出し、出勤簿に反映します</div>
+
+    <div id="install-banner" class="card">
+      <span id="install-banner-text" style="font-size:0.9em; color: var(--text-muted);">アプリとしてインストールすると、ホーム画面から一発で開けます</span>
+      <button id="install-button" style="white-space:nowrap;">アプリをインストール</button>
+    </div>
+
+    <div class="card" id="upload-section">
+      <h2>1. ファイルと対象月を選択</h2>
+      <div class="field-row">
+        <div class="field" style="flex: 1; min-width: 220px;">
+          <label>LINEエクスポートテキスト</label>
+          <div class="dropzone" id="dropzone">
+            <input type="file" id="file-input" accept=".txt">
+            <span id="dropzone-label">ここにファイルをドラッグ、またはクリックして選択</span>
+            <div class="filename" id="filename-display"></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>対象月</label>
+          <input type="month" id="target-month">
+        </div>
+        <div class="field">
+          <button id="extract-button">抽出開始</button>
+        </div>
+      </div>
+      <div id="status"></div>
+    </div>
+
+    <div class="card" id="preview-section">
+      <h2>2. プレビューを確認</h2>
+      <div class="legend">
+        <span class="badge high">high</span>
+        <span class="badge medium">medium</span>
+        <span class="badge low">low</span>
+        <span>現場・始業・終業のセルはクリックして直接編集できます</span>
+      </div>
+      <table id="preview-table">
+        <thead>
+          <tr><th>日付</th><th>現場</th><th>始業</th><th>終業</th><th>confidence</th><th>notes</th><th>元</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="actions">
+        <button class="secondary" id="restart-button">やり直す</button>
+        <button id="commit-button">確定して出勤簿に反映</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
