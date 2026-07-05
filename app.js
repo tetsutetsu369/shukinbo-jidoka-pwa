@@ -196,17 +196,28 @@ function handleCommit() {
   }
 
   document.getElementById('commit-button').disabled = true;
-  setStatus('出勤簿に書き込んでいます...', 'loading');
+  showLoadingOverlay('出勤簿に書き込んでいます...');
 
   callApi('commitToSheet', { confirmedRows: extractedRows, targetMonth: currentTargetMonth })
     .then(function (result) {
       document.getElementById('commit-button').disabled = false;
+      hideLoadingOverlay();
       setStatus(result.message, 'success');
     })
     .catch(function (error) {
       document.getElementById('commit-button').disabled = false;
+      hideLoadingOverlay();
       setStatus('エラー: ' + error.message, 'error');
     });
+}
+
+function showLoadingOverlay(message) {
+  document.getElementById('loading-overlay-text').textContent = message;
+  document.getElementById('loading-overlay').classList.add('visible');
+}
+
+function hideLoadingOverlay() {
+  document.getElementById('loading-overlay').classList.remove('visible');
 }
 
 // ===== PWAインストール =====
