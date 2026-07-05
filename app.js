@@ -213,7 +213,7 @@ function handleCommit() {
   callApi('commitToSheet', { confirmedRows: extractedRows, targetMonth: currentTargetMonth })
     .then(function (result) {
       document.getElementById('commit-button').disabled = false;
-      hideLoadingOverlay();
+      showOverlaySuccess(result.message);
       setStatus(result.message, 'success');
     })
     .catch(function (error) {
@@ -224,8 +224,19 @@ function handleCommit() {
 }
 
 function showLoadingOverlay(message) {
+  var overlay = document.getElementById('loading-overlay');
+  overlay.classList.remove('success');
+  document.getElementById('loading-overlay-icon').innerHTML = '<div class="spinner-large"></div>';
   document.getElementById('loading-overlay-text').textContent = message;
-  document.getElementById('loading-overlay').classList.add('visible');
+  overlay.classList.add('visible');
+}
+
+function showOverlaySuccess(message) {
+  var overlay = document.getElementById('loading-overlay');
+  overlay.classList.add('success');
+  document.getElementById('loading-overlay-icon').innerHTML = '<div class="overlay-checkmark">✓</div>';
+  document.getElementById('loading-overlay-text').textContent = message;
+  setTimeout(hideLoadingOverlay, 1600);
 }
 
 function hideLoadingOverlay() {

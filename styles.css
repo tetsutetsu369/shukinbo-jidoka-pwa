@@ -320,3 +320,22 @@ button.secondary:hover:not(:disabled) { background: #eef1ff; }
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
+
+.overlay-checkmark {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--high);
+  color: var(--high-text);
+  font-size: 1.6em;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pop-in 0.25s ease-out;
+}
+@keyframes pop-in {
+  from { transform: scale(0.5); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+#loading-overlay.success #loading-overlay-text { color: var(--high-text); }
