@@ -128,6 +128,8 @@ button.secondary:hover:not(:disabled) { background: #eef1ff; }
 }
 #status.error { color: var(--low-text); font-weight: 600; }
 #status.success { color: var(--high-text); font-weight: 600; }
+/* 一次モデル以外で抽出されたときの注意表示。改行を活かすため pre-line にする */
+#status.warning { color: var(--medium-text); font-weight: 600; white-space: pre-line; }
 
 .spinner {
   width: 14px;

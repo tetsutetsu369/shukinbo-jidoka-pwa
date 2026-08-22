@@ -42,7 +42,33 @@ async function callApi(action, payload) {
     }
     throw new Error(json.error);
   }
+  // 直近の呼び出しに付随した情報（使用モデル等）。result の形は変えずに別途保持する
+  lastMeta = json.meta || null;
   return json.result;
+}
+
+// 直近の callApi が返した meta（extractForPreview では使用モデルが入る）
+var lastMeta = null;
+
+/**
+ * 使用したモデルを人が読める短い名前にする。
+ * どのモデルが答えたかで結果の信頼度が変わるため、画面に必ず出す。
+ */
+function describeModel(meta) {
+  if (!meta) return '';
+  if (meta.backend === 'dummy') return 'ダミーデータ';
+  if (meta.backend === 'claude') return 'Claude';
+  var m = meta.model_used;
+  if (!m) return '不明';
+  // "gemini:gemini-3.5-flash" のようなプロバイダー接頭辞を落とす
+  var name = m.indexOf(':') >= 0 ? m.slice(m.indexOf(':') + 1) : m;
+  return name;
+}
+
+/** そのモデルの結果をそのまま信用してよいか。信用度の低い経路では注意を促す */
+function isPrimaryModel(meta) {
+  return !!(meta && meta.model_used && meta.model_used.indexOf('gemini-3.5-flash') >= 0
+    && meta.model_used.indexOf('flash-lite') < 0);
 }
 
 // ===== UI ロジック =====
@@ -94,7 +120,15 @@ function handleUpload() {
         document.getElementById('extract-button').disabled = false;
         extractedRows = rows;
         renderPreview(rows);
-        setStatus('抽出が完了しました（' + rows.length + '件）。内容を確認してください。', 'success');
+        var modelName = describeModel(lastMeta);
+        var msg = '抽出が完了しました（' + rows.length + '件・使用モデル: ' + modelName + '）。';
+        if (lastMeta && lastMeta.backend === 'gateway' && !isPrimaryModel(lastMeta)) {
+          // 一次モデルが使えず精度の低い経路に落ちた場合は、その旨をはっきり出す
+          msg += '\n※通常より精度の低いモデルで抽出されています。全件を必ず確認してください。';
+          setStatus(msg, 'warning');
+        } else {
+          setStatus(msg + '内容を確認してください。', 'success');
+        }
       })
       .catch(function (error) {
         document.getElementById('extract-button').disabled = false;
