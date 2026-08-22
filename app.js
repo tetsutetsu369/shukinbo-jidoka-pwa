@@ -86,7 +86,7 @@ function handleUpload() {
   var reader = new FileReader();
   reader.onload = function (e) {
     var text = e.target.result;
-    setStatus('抽出中です（Claude APIを呼び出しています。数十秒かかることがあります）...', 'loading');
+    setStatus('抽出中です（AIが解析しています。数十秒かかることがあります）...', 'loading');
     document.getElementById('extract-button').disabled = true;
 
     callApi('extractForPreview', { lineExportText: text, targetMonth: currentTargetMonth })
